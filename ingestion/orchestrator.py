@@ -64,6 +64,7 @@ def _python_chunk(text: str, max_tokens: int, overlap_tokens: int) -> list[str]:
 
 def ingest_document(
     path: str,
+    source_name: str | None = None,
     extra_metadata: dict[str, Any] | None = None,
     max_tokens: int = MAX_TOKENS,
     overlap_tokens: int = OVERLAP_TOKENS,
@@ -75,6 +76,8 @@ def ingest_document(
     ----------
     path : str
         Path to the document file.
+    source_name : str | None
+        Display name to store as the source (defaults to the file's basename).
     extra_metadata : dict | None
         Additional metadata to attach to each chunk.
     max_tokens : int
@@ -89,7 +92,7 @@ def ingest_document(
     """
     # 1. Parse
     text, doc_type = parse_document(path)
-    source = Path(path).name
+    source = source_name or Path(path).name
 
     # 2. Chunk
     if _USE_CPP:

@@ -92,9 +92,7 @@ async def ingest(file: UploadFile = File(...)) -> IngestResponse:
         tmp_path = tmp.name
 
     try:
-        result = ingest_document(tmp_path)
-        # Rename source to original filename
-        result["source"] = file.filename or result["source"]
+        result = ingest_document(tmp_path, source_name=file.filename or None)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

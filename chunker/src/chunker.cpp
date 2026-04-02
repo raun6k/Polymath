@@ -57,15 +57,10 @@ std::vector<std::string> SemanticChunker::split_sentences(
         }
 
         if (is_boundary) {
-            std::string trimmed = current;
-            // Trim leading/trailing whitespace
-            auto start = trimmed.find_first_not_of(" \t\n\r");
-            auto end = trimmed.find_last_not_of(" \t\n\r");
-            if (start != std::string::npos) {
-                trimmed = trimmed.substr(start, end - start + 1);
-            }
-            if (!trimmed.empty()) {
-                sentences.push_back(std::move(trimmed));
+            auto s = current.find_first_not_of(" \t\n\r");
+            if (s != std::string::npos) {
+                auto e = current.find_last_not_of(" \t\n\r");
+                sentences.push_back(current.substr(s, e - s + 1));
             }
             current.clear();
         }

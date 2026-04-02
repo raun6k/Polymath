@@ -79,6 +79,53 @@ def generate_document(n_words: int) -> str:
     return " ".join(sentences)
 
 
+def naive_python_chunk(text: str, max_tokens: int = 256, overlap_tokens: int = 32) -> list[str]:
+    """Naive character-iteration Python chunker (no C extensions)."""
+    # Split into sentences by scanning characters — no regex
+    sentences: list[str] = []
+    current: list[str] = []
+    for i, ch in enumerate(text):
+        current.append(ch)
+        if ch in ".!?":
+            j = i + 1
+            while j < len(text) and text[j] == " ":
+                j += 1
+            next_ch = text[j] if j < len(text) else ""
+            if not next_ch or next_ch.isupper() or next_ch == "\n":
+                s = "".join(current).strip()
+                if s:
+                    sentences.append(s)
+                current = []
+    if current:
+        s = "".join(current).strip()
+        if s:
+            sentences.append(s)
+
+    def _est(s: str) -> int:
+        return sum(1 for w in s.split(" ") if w)
+
+    chunks: list[str] = []
+    cur_sents: list[str] = []
+    cur_tok = 0
+    for sent in sentences:
+        est = _est(sent)
+        if cur_tok + est > max_tokens and cur_sents:
+            chunks.append(" ".join(cur_sents))
+            ol: list[str] = []
+            olt = 0
+            for s in reversed(cur_sents):
+                if olt + _est(s) > overlap_tokens:
+                    break
+                ol.insert(0, s)
+                olt += _est(s)
+            cur_sents, cur_tok = ol, olt
+        cur_sents.append(sent)
+        cur_tok += est
+    if cur_sents:
+        chunks.append(" ".join(cur_sents))
+    return chunks
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def run(n_words: int) -> None:
@@ -88,7 +135,17 @@ def run(n_words: int) -> None:
     text = generate_document(n_words)
     print(f"Document size: {len(text):,} characters\n")
 
-    # Python baseline
+    # Naive pure-Python baseline (character iteration, no C extensions)
+    naive_times = []
+    naive_chunks = None
+    for _ in range(3):
+        t0 = time.perf_counter()
+        naive_chunks = naive_python_chunk(text)
+        naive_times.append(time.perf_counter() - t0)
+    naive_avg = sum(naive_times) / len(naive_times)
+    print(f"Naive Python:    {naive_avg*1000:.1f} ms  ({len(naive_chunks)} chunks)")
+
+    # Regex Python baseline
     py_times = []
     py_chunks = None
     for _ in range(3):
@@ -96,7 +153,7 @@ def run(n_words: int) -> None:
         py_chunks = python_chunk(text)
         py_times.append(time.perf_counter() - t0)
     py_avg = sum(py_times) / len(py_times)
-    print(f"Python chunker:  {py_avg*1000:.1f} ms  ({len(py_chunks)} chunks)")
+    print(f"Regex Python:    {py_avg*1000:.1f} ms  ({len(py_chunks)} chunks)")
 
     # C++ chunker
     try:
@@ -109,9 +166,11 @@ def run(n_words: int) -> None:
             cpp_chunks = chunker.chunk(text)
             cpp_times.append(time.perf_counter() - t0)
         cpp_avg = sum(cpp_times) / len(cpp_times)
-        speedup = py_avg / cpp_avg if cpp_avg > 0 else float("inf")
+        speedup_vs_regex = py_avg / cpp_avg if cpp_avg > 0 else float("inf")
+        speedup_vs_naive = naive_avg / cpp_avg if cpp_avg > 0 else float("inf")
         print(f"C++ chunker:     {cpp_avg*1000:.1f} ms  ({len(cpp_chunks)} chunks)")
-        print(f"\nSpeedup: {speedup:.1f}x {'✓' if speedup >= 5 else '(target: 5x+)'}")
+        print(f"\nSpeedup vs naive Python: {speedup_vs_naive:.1f}x {'✓' if speedup_vs_naive >= 5 else ''}")
+        print(f"Speedup vs regex Python: {speedup_vs_regex:.1f}x")
     except ImportError:
         print("C++ chunker:     NOT BUILT — run `cmake --build chunker/build` first")
         print("\nRe-run after building the C++ extension to see the speedup.")
