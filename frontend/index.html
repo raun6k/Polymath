@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Polymath — Research Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">⬡</span>
+        <span class="brand-name">Polymath</span>
+      </div>
+
+      <section class="upload-section">
+        <h3>Ingest Document</h3>
+        <label class="upload-label" id="uploadLabel">
+          <input type="file" id="fileInput" accept=".pdf,.md,.markdown,.txt,.py,.ts,.js,.cpp,.c,.h,.hpp,.java,.go,.rs" />
+          <span class="upload-icon">⬆</span>
+          <span id="uploadText">Drop file or click to browse</span>
+        </label>
+        <button class="btn btn-primary" id="ingestBtn" disabled>Ingest</button>
+        <div id="ingestStatus" class="status-msg"></div>
+      </section>
+
+      <section class="sources-section">
+        <div class="sources-header">
+          <h3>Knowledge Base</h3>
+          <button class="btn btn-sm" id="refreshSourcesBtn" title="Refresh">↺</button>
+        </div>
+        <div id="sourcesList" class="sources-list">
+          <span class="empty-note">No documents yet</span>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Main chat -->
+    <main class="chat-panel">
+      <header class="chat-header">
+        <h1>Ask anything</h1>
+        <p class="subtitle">Answers synthesized from your ingested documents</p>
+      </header>
+
+      <div class="messages" id="messages">
+        <div class="message assistant-message welcome-msg">
+          <div class="msg-content">
+            <p>Hello! I'm Polymath, your research assistant.</p>
+            <p>Ingest a document on the left, then ask me questions about it.</p>
+          </div>
+        </div>
+      </div>
+
+      <form class="input-bar" id="queryForm">
+        <input
+          type="text"
+          id="questionInput"
+          class="question-input"
+          placeholder="Ask a question about your documents..."
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn-send" id="sendBtn">
+          <span id="sendLabel">Send</span>
+          <span id="sendSpinner" class="spinner hidden"></span>
+        </button>
+      </form>
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

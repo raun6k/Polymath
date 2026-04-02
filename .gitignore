@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dylib
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# C++ build
+chunker/build/
+chunker/build_debug/
+*.o
+*.a
+
+# pybind11 extension
+fast_chunker*.so
+fast_chunker*.dylib
+fast_chunker*.pyd
+
+# Node / TypeScript
+node_modules/
+mcp-server/dist/
+mcp-server/node_modules/
+
+# Vector store (local data)
+vectorstore/
+
+# Environment
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
